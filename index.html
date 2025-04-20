@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Árbol de la Vida - Cálculo Cabalístico</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #fdf6ec;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #5e412f;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #dcd0ff;
+      cursor: pointer;
+    }
+    .sefira {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      font-weight: bold;
+      padding: 6px 10px;
+      border-radius: 10px;
+      color: #3e2f1c;
+      border: 2px solid #ccc;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    .tooltip {
+      transition: opacity 0.3s ease-in-out;
+      opacity: 0;
+
+      position: absolute;
+      background: #fff8e1;
+      border: 1px solid #d3bfa3;
+      padding: 0.5em;
+      border-radius: 6px;
+      display: none;
+      z-index: 10;
+      max-width: 220px;
+      font-size: 0.9em;
+    }
+    .tree-container {
+      position: relative;
+      width: 500px;
+      height: 800px;
+      margin: 2em auto;
+    }
+    svg.senderos {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      top: 0;
+      left: 0;
+    }
+    .sefira[data-sefira="Keter"] { background: #E8EAF6; }
+    .sefira[data-sefira="Jojma"] { background: #FFF3E0; }
+    .sefira[data-sefira="Bina"] { background: #F3E5F5; }
+    .sefira[data-sefira="Jesed"] { background: #E8F5E9; }
+    .sefira[data-sefira="Gebura"] { background: #FFEBEE; }
+    .sefira[data-sefira="Tiferet"] { background: #FFFDE7; }
+    .sefira[data-sefira="Netzaj"] { background: #E0F7FA; }
+    .sefira[data-sefira="Hod"] { background: #E1F5FE; }
+    .sefira[data-sefira="Yesod"] { background: #FCE4EC; }
+    .sefira[data-sefira="Maljut"] { background: #EDE7F6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌳 Calculadora Cabalística</h1>
+    <p>Nombre completo:</p>
+    <input type="text" id="nombre" placeholder="Ej: Juan Perez">
+    <p>Fecha de nacimiento (DD/MM/AAAA):</p>
+    <input type="text" id="fecha" placeholder="19/10/1981"><br>
+    <button onclick="calcular()">Calcular Árbol</button>
+
+    <div class="tree-container" id="tree">
+      <svg class="senderos" id="senderos"></svg>
+      <div id="tooltip" class="tooltip"></div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const posiciones = {
+        Keter: [250, 40], Jojma: [125, 120], Bina: [375, 120],
+        Jesed: [125, 250], Gebura: [375, 250], Tiferet: [250, 360],
+        Netzaj: [125, 480], Hod: [375, 480], Yesod: [250, 590], Maljut: [250, 720]
+      };
+
+      const conexiones = [
+        ["Keter", "Jojma"], ["Keter", "Bina"], ["Jojma", "Bina"],
+        ["Jojma", "Jesed"], ["Bina", "Gebura"], ["Jesed", "Gebura"],
+        ["Jesed", "Tiferet"], ["Gebura", "Tiferet"], ["Tiferet", "Netzaj"],
+        ["Tiferet", "Hod"], ["Netzaj", "Hod"], ["Netzaj", "Yesod"],
+        ["Hod", "Yesod"], ["Yesod", "Maljut"], ["Tiferet", "Yesod"]
+      ];
+
+      const interpretaciones = {
+        Keter: "Conexión divina, propósito superior.",
+        Jojma: "Sabiduría pura, chispa inicial.",
+        Bina: "Comprensión y estructura.",
+        Jesed: "Amor incondicional, expansión.",
+        Gebura: "Disciplina, límites y juicio.",
+        Tiferet: "Equilibrio, belleza, armonía.",
+        Netzaj: "Victoria, persistencia.",
+        Hod: "Humildad, expresión emocional.",
+        Yesod: "Fundamento, conexión subconsciente.",
+        Maljut: "Manifestación física, mundo real."
+      };
+
+      const tabla = {
+        A:1, J:1, S:1, B:2, K:2, T:2, C:3, L:3, U:3,
+        D:4, M:4, V:4, E:5, N:5, W:5, F:6, Ñ:6, X:6,
+        G:7, O:7, Y:7, H:8, P:8, Z:8, I:9, Q:9
+      };
+
+      window.calcular = function() {
+        const nombre = document.getElementById('nombre').value.toUpperCase().replace(/[^A-ZÑ]/g, '');
+        const fecha = document.getElementById('fecha').value.replace(/[^0-9]/g, '').split('').map(n => {
+          const mapa = { '0': 7, '1': 6, '2': 5 };
+          return mapa[n] !== undefined ? mapa[n] : parseInt(n);
+        });
+
+        const sumaNombre = [...nombre].reduce((acc, l) => acc + (tabla[l] || 0), 0);
+        const sumaFecha = fecha.reduce((a,b)=>a+b,0);
+        const rep = {}, count = fecha.length;
+        fecha.forEach(n => rep[n] = (rep[n] || 0) + 1);
+        const maxRep = parseInt(Object.entries(rep).sort((a,b)=>b[1]-a[1])[0][0]);
+
+        const sefirot = {
+          Keter: sumaNombre,
+          Jojma: fecha[0] || 0,
+          Bina: fecha[1] || 0,
+          Jesed: fecha[2] || 0,
+          Gebura: fecha[3] || 0,
+          Tiferet: sumaFecha,
+          Netzaj: fecha[4] || 0,
+          Hod: fecha[5] || 0,
+          Yesod: maxRep,
+          Maljut: Math.round(sumaFecha / count)
+        };
+
+        const container = document.getElementById("tree");
+        const senderos = document.getElementById("senderos");
+        document.querySelectorAll(".sefira").forEach(el => el.remove());
+        senderos.innerHTML = '';
+
+        conexiones.forEach(([a, b]) => {
+          const [x1, y1] = posiciones[a];
+          const [x2, y2] = posiciones[b];
+          const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", x1); line.setAttribute("y1", y1);
+          line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+          line.setAttribute("stroke", "#b08d57");
+          line.setAttribute("stroke-width", "2");
+          senderos.appendChild(line);
+        });
+
+        for (const [s, val] of Object.entries(sefirot)) {
+          const div = document.createElement("div");
+          div.className = "sefira";
+          div.dataset.sefira = s;
+          const [x, y] = posiciones[s];
+          div.style.left = x + "px";
+          div.style.top = y + "px";
+          div.innerHTML = `<strong>${s}</strong><br>${val}`;
+          div.onclick = (e) => mostrarTooltip(e, s, val);
+          container.appendChild(div);
+        }
+      };
+
+      function mostrarTooltip(e, sefira, valor) {
+        const tooltip = document.getElementById("tooltip");
+        tooltip.innerHTML = `<strong>${sefira}</strong><br>${interpretaciones[sefira]}<br><em>Valor: ${valor}</em>`;
+        tooltip.style.opacity = '1'; tooltip.style.display = 'block';
+        tooltip.style.left = (e.target.getBoundingClientRect().left + e.target.offsetWidth / 2 - 100) + 'px';
+        tooltip.style.top = (e.target.getBoundingClientRect().top - 70 + window.scrollY) + 'px';
+        setTimeout(() => { tooltip.style.opacity = '0'; }, 6000);
+      }
+    });
+  </script>
+</body>
+</html>
