@@ -24,6 +24,4 @@ Este proyecto es una aplicación web interactiva que permite calcular y visualiz
 
 Esta herramienta fue creada como complemento para estudiantes de un curso de Cábala, con el objetivo de facilitar el análisis espiritual y el autoconocimiento a través de los números.
 
----
 
-¿Querés que lo copie automáticamente en tu repositorio o preferís que lo pegues vos en GitHub? Puedo ayudarte a crearlo paso a paso si querés.
